@@ -1,5 +1,9 @@
 # ansible-lab
-Ansible Lab: 3 nodes setup: control node (ansible installed) + 2 workers in Vagrant (Centos 7 box).
+![workflow](https://github.com/airdata/vagrant-ansible-nodes/actions/workflows/main.yml/badge.svg)
+
+3 nodes setup:
+  - 1 ansible control node (ansible installed)
+  -  2 workers in Vagrant (Centos 7 box).
 
 # Requirements
 
@@ -7,8 +11,8 @@ Ansible Lab: 3 nodes setup: control node (ansible installed) + 2 workers in Vagr
   - Linux
   - MacOS
   - Windows
-2. Vagrant >= 2.1.5
-3. VirtualBox >= 5.2.18
+2. Vagrant >= 2.2.19
+3. VirtualBox >= 6.1.40
 4. Supported Guest OS: centos/7 box
 
 # How to Start Lab

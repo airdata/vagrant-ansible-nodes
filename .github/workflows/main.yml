@@ -1,4 +1,4 @@
-name: vagrant-up
+name: Deploy Ansible Nodes with Vagrant
 
 on: [push]
 

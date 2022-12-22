@@ -20,7 +20,7 @@ jobs:
       run: vagrant --version
 
     - name: add network
-      run: mkdir /etc/vbox/ && echo '* 0.0.0.0/0 ::/0' > /etc/vbox/networks.conf && chmod 644 /etc/vbox/networks.conf
+      run: sudo mkdir /etc/vbox/ && sudo echo '* 0.0.0.0/0 ::/0' > /etc/vbox/networks.conf && sudo chmod 644 /etc/vbox/networks.conf
 
     - name: Run vagrant up
       run: vagrant up

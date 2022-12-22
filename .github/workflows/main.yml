@@ -22,8 +22,11 @@ jobs:
     - name: add network
       run: sudo mkdir /etc/vbox/
 
+    - name: chmod dir
+      run: sudo chmod -R 777 /etc/vbox/
+
     - name: add files
-      run: sudo echo '* 0.0.0.0/0 ::/0' > /etc/vbox/networks.conf
+      run: sudo echo "* 0.0.0.0/0 ::/0" >> /etc/vbox/networks.conf
 
     - name: chmod files
       run: sudo chmod 644 /etc/vbox/networks.conf

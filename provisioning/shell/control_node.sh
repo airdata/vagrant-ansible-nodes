@@ -25,7 +25,7 @@ function enable_epel_repo() {
 
 function install_ansible() {
     check_installed "$ANSIBLE_PACKAGE"
-    if [ "$?" -eq 1 ]; then 
+    if [ "$?" -eq 1 ]; then
         echo "$ANSIBLE_PACKAGE is not installed"
         install_package "$ANSIBLE_PACKAGE"
     fi
@@ -33,21 +33,21 @@ function install_ansible() {
 
 function install_git() {
     check_installed "$GIT_PACKAGE"
-    if [ "$?" -eq 1 ]; then 
+    if [ "$?" -eq 1 ]; then
         echo "$GIT_PACKAGE is not installed"
         install_package "$GIT_PACKAGE"
     fi
 }
 
-function check_installed() { 
+function check_installed() {
     yum list installed "$@"
 }
 
-function install_package() { 
+function install_package() {
     yum install "$@" -y
 }
 
-function chmod_ssh() { 
+function chmod_ssh() {
     chmod 600 /home/vagrant/.ssh/*
 }
 
@@ -58,11 +58,36 @@ function add_ansible_nodes() {
         || echo "$node" >> "$ANSIBLE_HOSTS_FILE"
     done
 }
+function install_docker () {
+    # Remove any old versions
+    sudo yum remove docker docker-common docker-selinux docker-engine
+    # Install required packages
+    sudo yum install -y yum-utils device-mapper-persistent-data lvm2
+    # Configure docker repository
+    sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+    # Install Docker-ce
+    sudo yum install -y docker-ce
+    # Start Docker
+    sudo systemctl start docker
+    sudo systemctl enable docker
+    # Post Installation Steps
+    # Create Docker group
+    sudo groupadd docker
+    # Add user to the docker group
+    sudo usermod -aG docker vagrant
+    # Install docker-compose
+    curl -L "https://github.com/docker/compose/releases/download/1.25.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    # Permssion +x execute binary
+    chmod +x /usr/local/bin/docker-compose
+    # Create link symbolic
+    ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+}
 
 if platform_supported; then
     enable_epel_repo && \
     install_ansible && \
     install_git && \
     add_ansible_nodes && \
-    chmod_ssh
+    chmod_ssh && \
+    install_docker
 fi

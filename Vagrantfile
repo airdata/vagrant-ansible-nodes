@@ -37,8 +37,14 @@ Vagrant.configure("2") do |config|
       cfg.vm.hostname = node['hostname']
       cfg.vm.network opts['provider']['virtualbox']['vm']['net'].to_sym, ip: node['ip']
       cfg.vm.provision opts['provisioner'][0]['type'].to_sym, sync_hosts: opts['provisioner'][0]['sync_hosts']
+      if node['name'] == 'node-0'
+        cfg.vm.network :forwarded_port, host: 8001, guest: 8080
+        end
+      if node['name'] == 'node-1'
+        cfg.vm.network :forwarded_port, host: 8002, guest: 8080
+        end
       if node['name'] == 'control-node'
-        cfg.vm.network :forwarded_port, host: 8888, guest: 8080
+        cfg.vm.network :forwarded_port, host: 8000, guest: 8080
         cfg.vm.provision opts['provisioner'][1]['type'].to_sym do |s|
           s.path = "#{shell_provisioning_dir}/control_node.sh"
           s.args = worker_nodes

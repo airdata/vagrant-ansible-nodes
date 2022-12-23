@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 
 # this script installs ansible control node
-PLATFORM_RELEASE_FILE="/etc/redhat-release"
+INFO(){
+    /bin/echo -e "\e[104m\e[97m[INFO -->]\e[49m\e[39m $@"
+}
+OS_RELEASE="/etc/redhat-release"
 ANSIBLE_HOSTS_FILE="/etc/ansible/hosts"
 ANSIBLE_NODES=("$@")
 USER_NAME='admin'
 USER_PASSWORD='admin'
-PLUGIN_NAME=( "ace-editor" "ansible-tower" "ansicolor" "ant" "antisamy-markup-formatter" "apache-httpcomponents-client-4-api" "atlassian-bitbucket-server-integration" "authentication-tokens"
+JENKINS_PLUGINS=( "ace-editor" "ansible-tower" "ansicolor" "ant" "antisamy-markup-formatter" "apache-httpcomponents-client-4-api" "atlassian-bitbucket-server-integration" "authentication-tokens"
             "blueocean-autofavorite" "blueocean-bitbucket-pipeline" "blueocean-commons" "blueocean-config" "blueocean-core-js" "blueocean-dashboard" "blueocean-display-url" "blueocean-events" "blueocean-git-pipeline"
             "blueocean-github-pipeline" "blueocean-i18n" "blueocean-jwt" "blueocean-personalization" "blueocean-pipeline-api-impl" "blueocean-pipeline-editor" "blueocean-pipeline-scm-api" "blueocean-rest-impl" "blueocean-rest"
             "blueocean-web" "blueocean" "bootstrap5-api" "bouncycastle-api" "branch-api" "build-monitor-plugin" "build-timeout" "build-user-vars-plugin" "build-with-parameters" "caffeine-api" "checks-api" "cloud-stats" "cloudbees-bitbucket-branch-source"
@@ -21,16 +24,18 @@ PLUGIN_NAME=( "ace-editor" "ansible-tower" "ansicolor" "ant" "antisamy-markup-fo
             "workflow-durable-task-step" "workflow-job" "workflow-multibranch" "workflow-scm-step" "workflow-step-api" "workflow-support" "ws-cleanup" "yet-another-docker-plugin" )
 
 function platform_supported() {
-    [ -f "$PLATFORM_RELEASE_FILE" ] && \
-    echo "Platform supported" || \
-    (echo "Platform is not supported. Exiting..."; exit 1)
+    [ -f "$OS_RELEASE" ] && \
+    INFO "Platform supported" || \
+    (INFO "Platform is not supported. Exiting..."; exit 1)
 }
 
 function chmod_ssh() {
+    INFO "chmod ssh"
     chmod 600 /home/vagrant/.ssh/*
 }
 
 function add_ansible_nodes() {
+    INFO "Add ansible nodes"
     for node in "${ANSIBLE_NODES[@]}"; do
         grep -q "$node" "$ANSIBLE_HOSTS_FILE" && \
         (echo "$node is already added to $ANSIBLE_HOSTS_FILE"; exit 0) \
@@ -40,6 +45,7 @@ function add_ansible_nodes() {
 
 # Install ansible, docker, git, jenkins
 function install_all() {
+    INFO "Install all"
     # Remove any old versions
     sudo yum remove -y docker docker-common docker-selinux docker-engine java*
     # Install required packages
@@ -48,7 +54,7 @@ function install_all() {
     sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
     sudo yum install -y docker-ce ansible git
     sudo systemctl start docker
-    echo "!-- Docker is started --!"
+    INFO "Docker is started"
     sudo systemctl enable docker
     sudo groupadd docker
     sudo usermod -aG docker vagrant
@@ -63,11 +69,12 @@ function install_all() {
     sudo systemctl daemon-reload
     sudo systemctl start jenkins
     sudo systemctl enable jenkins
-    echo "!-- Jenkins is started --!"
+    INFO "Jenkins is started"
     sudo echo "Jenkins password is: $(cat /var/lib/jenkins/secrets/initialAdminPassword)"
 }
 
 function config_jenkins() {
+    INFO "Confing Jenknins"
     # Get initial password
     initial_password=$(cat /var/lib/jenkins/secrets/initialAdminPassword)
     # Get jenkins CLI
@@ -75,7 +82,7 @@ function config_jenkins() {
     if [ ! -f $path_to_jenkins ]; then
        wget http://localhost:8080/jnlpJars/jenkins-cli.jar -O $path_to_jenkins
     else
-       echo "CLI exist.."
+       INFO "CLI exist.."
     fi
     # Jenkins version
     echo 2.0 > /var/lib/jenkins/jenkins.install.InstallUtil.lastExecVersion
@@ -84,23 +91,25 @@ function config_jenkins() {
     systemctl restart jenkins
 }
 function plugins_install() {
+    INFO "Set security"
     sed -i 's/<denyAnonymousReadAccess>true<\/denyAnonymousReadAccess>/<denyAnonymousReadAccess>false<\/denyAnonymousReadAccess>/g' /var/lib/jenkins/config.xml
-    sed -i 's/<useSecurity>true<\/useSecurity>/<useSecurity>false<\/useSecurity>/g' /var/lib/jenkins/config.xml
     systemctl restart jenkins
     sleep 20
     systemctl status jenkins
 
     # Install plugins
-    for i in ${PLUGIN_NAME[@]};do
+    INFO "Start install plugins"
+    for i in ${JENKINS_PLUGINS[@]};do
        java -jar /var/lib/jenkins/jenkins-cli.jar -s http://localhost:8080/ -auth $USER_NAME:$USER_PASSWORD install-plugin $i
     done
     systemctl restart jenkins
+    INFO "Jenkins has been restarted"
 }
 
 if platform_supported; then
     chmod_ssh && \
     install_all && \
-    add_ansible_nodes
+    add_ansible_nodes && \
     config_jenkins && \
     plugins_install
 fi

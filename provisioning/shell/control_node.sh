@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# this script installs ansible control node
+# this script installs ansible control node 
 
 ANSIBLE_PACKAGE="ansible"
 GIT_PACKAGE="git"
@@ -82,6 +82,24 @@ function install_docker () {
     # Create link symbolic
     ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 }
+function install_jenkins () {
+    sudo yum install -y yum-presto wget openssl curl mlocate epel-release
+    # Jenkins on CentOS requires Java, but it won't work with the default (GCJ) version of Java. So, let's remove it:
+    sudo yum remove -y java*
+    # Download and Install Jenkins
+    sudo wget --no-check-certificate -O /etc/yum.repos.d/jenkins.repo \
+        https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+    sudo yum install -y jenkins java-11-openjdk-devel
+    sudo systemctl daemon-reload
+    # Start Jenkins
+    sudo systemctl start jenkins
+    # Enable Jenkins to run on Boot
+    sudo systemctl enable jenkins
+    sudo sed -i 's/<denyAnonymousReadAccess>true/<denyAnonymousReadAccess>false/g' /var/lib/jenkins/config.xml
+    sudo sed -i 's/<useSecurity>true/<useSecurity>false/g' /var/lib/jenkins/config.xml
+    sudo echo "Jenkins password is: $(cat /var/lib/jenkins/secrets/initialAdminPassword)"
+}
 
 if platform_supported; then
     enable_epel_repo && \
@@ -89,5 +107,6 @@ if platform_supported; then
     install_git && \
     add_ansible_nodes && \
     chmod_ssh && \
-    install_docker
+    install_docker && \
+    install_jenkins
 fi

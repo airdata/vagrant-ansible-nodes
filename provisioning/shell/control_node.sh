@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# this script installs ansible control node 
+# this script installs ansible control node
 
 PLATFORM_RELEASE_FILE="/etc/redhat-release"
 ANSIBLE_HOSTS_FILE="/etc/ansible/hosts"
@@ -23,28 +23,24 @@ function add_ansible_nodes() {
         || echo "$node" >> "$ANSIBLE_HOSTS_FILE"
     done
 }
-function install_docker () {
+function install_docker_ansible_git () {
     # Remove any old versions
     sudo yum remove docker docker-common docker-selinux docker-engine
     # Install required packages
     sudo yum install -y yum-utils epel-release device-mapper-persistent-data lvm2
     # Configure docker repository
     sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    # Install Docker-ce
+    # Install Docker-ce git and ansible
     sudo yum install -y docker-ce ansible git
     # Start Docker
     sudo systemctl start docker
     sudo systemctl enable docker
-    # Post Installation Steps
-    # Create Docker group
+    # Create Docker group and add user
     sudo groupadd docker
-    # Add user to the docker group
     sudo usermod -aG docker vagrant
     # Install docker-compose
     curl -L "https://github.com/docker/compose/releases/download/1.25.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    # Permssion +x execute binary
     chmod +x /usr/local/bin/docker-compose
-    # Create link symbolic
     ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 }
 function install_jenkins () {
@@ -68,7 +64,7 @@ function install_jenkins () {
 
 if platform_supported; then
     chmod_ssh && \
-    install_docker && \
+    install_docker_ansible_git && \
     add_ansible_nodes && \
     install_jenkins
 fi

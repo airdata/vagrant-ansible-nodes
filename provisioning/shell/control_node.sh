@@ -50,54 +50,14 @@ function install_all() {
     chmod +x /usr/local/bin/docker-compose
     ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
     # Download and Install Jenkins and Java
-    sudo wget --no-check-certificate -O /etc/yum.repos.d/jenkins.repo \
-        https://pkg.jenkins.io/redhat-stable/jenkins.repo
-    sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
-    sudo yum install -y jenkins-2.332.2-1.1 java-11-openjdk-devel
-    sudo systemctl daemon-reload
-    sudo systemctl start jenkins
-    sudo systemctl enable jenkins
-    INFO "Jenkins is started"
-    sudo echo "Jenkins password is: $(cat /var/lib/jenkins/secrets/initialAdminPassword)"
-}
-
-function config_jenkins() {
-    INFO "Confing Jenknins"
-    # Get initial password
-    initial_password=$(cat /var/lib/jenkins/secrets/initialAdminPassword)
-    # Get jenkins CLI
-    path_to_jenkins='/var/lib/jenkins/jenkins-cli.jar'
-    if [ ! -f $path_to_jenkins ]; then
-       wget http://localhost:8080/jnlpJars/jenkins-cli.jar -O $path_to_jenkins
-    else
-       INFO "CLI exist.."
-    fi
-    # Jenkins version
-    echo 2.0 > /var/lib/jenkins/jenkins.install.InstallUtil.lastExecVersion
-    # Create admin user
-    echo 'jenkins.model.Jenkins.instance.securityRealm.createAccount("'$USER_NAME'","'$USER_PASSWORD'")' |java -jar /var/lib/jenkins/jenkins-cli.jar -auth admin:$initial_password -s http://localhost:8080/ groovy =
-    systemctl restart jenkins
-}
-function plugins_install() {
-    INFO "Set security"
-    sed -i 's/<denyAnonymousReadAccess>true<\/denyAnonymousReadAccess>/<denyAnonymousReadAccess>false<\/denyAnonymousReadAccess>/g' /var/lib/jenkins/config.xml
-    systemctl restart jenkins
-    sleep 20
-    systemctl status jenkins
-
-    # Install plugins
-    INFO "Start install plugins"
-    for i in ${JENKINS_PLUGINS[@]};do
-       java -jar /var/lib/jenkins/jenkins-cli.jar -s http://localhost:8080/ -auth $USER_NAME:$USER_PASSWORD install-plugin $i
-    done
-    systemctl restart jenkins
-    INFO "Jenkins has been restarted"
+    mkdir -m 777 /var/jenkins_home
+    docker run -d -p 8080:8080 -p 50000:50000 --name jenkins -v /var/run/docker.sock:/var/run/docker.sock -v /var/jenkins_home/:/var/jenkins_home jenkins/jenkins:lts
+    sleep 100
+    echo "Jenkins password: $(docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword)"
 }
 
 if platform_supported; then
     chmod_ssh && \
     install_all && \
-    add_ansible_nodes && \
-    config_jenkins && \
-    plugins_install
+    add_ansible_nodes
 fi

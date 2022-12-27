@@ -20,7 +20,7 @@ jobs:
       run: |
         sudo mkdir /etc/vbox/
         sudo chmod -R 777 /etc/vbox/
-        sudo brew install ansible
+        brew install ansible
         sudo echo "* 0.0.0.0/0 ::/0" >> /etc/vbox/networks.conf
         sudo chmod 644 /etc/vbox/networks.conf
 

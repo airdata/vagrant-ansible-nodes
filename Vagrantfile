@@ -21,15 +21,20 @@ nodes_array = opts['provider']['virtualbox']['nodes']
 worker_nodes = extract_worker_nodes(nodes_array)
 
 Vagrant.configure("2") do |config|
-
+  ###############################################################################
+  # Plugin settings                                                             #
+  ###############################################################################
   config.cache.auto_detect = opts['cache']['auto_detect']
   config.ssh.insert_key = false
   config.vm.box_download_insecure=true
 
+  ###############################################################################
+  # VirtualBox settings                                                         #
+  ###############################################################################
   config.vm.provider :virtualbox do |pr|
     nodes_array.each do |node|
-    pr.memory = node['mem']
-    pr.cpus = opts['provider']['virtualbox']['vm']['cpu']
+      pr.memory = node['mem']
+      pr.cpus = opts['provider']['virtualbox']['vm']['cpu']
     end
   end
 
@@ -40,6 +45,7 @@ Vagrant.configure("2") do |config|
     config.vm.define node['name'] do |cfg|
       cfg.vm.box = opts['provider']['virtualbox']['vm']['box']
       cfg.vm.hostname = node['hostname']
+      # Configure A Private Network IP
       cfg.vm.network opts['provider']['virtualbox']['vm']['net'].to_sym, ip: node['ip']
       cfg.vm.provision opts['provisioner'][0]['type'].to_sym, sync_hosts: opts['provisioner'][0]['sync_hosts']
       if node['name'] == 'node-0'

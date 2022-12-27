@@ -1,9 +1,6 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# here you will find helper methods to start 
-# vagrant test env
-
 require 'yaml'
 ###############################################################################
 # Plugin settings                                                             #

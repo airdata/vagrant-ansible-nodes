@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 INFO(){
-    /bin/echo -e "\e[104m\e[97m[INFO -->]\e[49m\e[39m $@"
+    /bin/echo -e "\e[48;5;76m[INFO -->]\e[49m\e[39m $@"
 }
 USER_NAME=admin
 USER_PASSWORD=admin
@@ -25,8 +25,7 @@ function config_jenkins() {
     initial_password=$(docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword)
     # Get jenkins CLI
     path_to_jenkins='/var/jenkins_home/jenkins-cli.jar'
-    until curl --retry 10 --retry-delay 5 -s -o /dev/null "http://localhost:8080/jnlpJars/jenkins-cli.jar"
-    do
+    until curl --retry 10 --retry-delay 5 -s -o /dev/null "http://localhost:8080/jnlpJars/jenkins-cli.jar"; do
         sleep 5
     done
     if [ ! -f $path_to_jenkins ]; then
@@ -44,20 +43,25 @@ function jenkins_plugins() {
 
     # Install plugins
     INFO "Start installing plugins"
-    for i in ${PLUGIN_NAME[@]};do
+    for i in ${PLUGIN_NAME[@]}; do
        java -jar /var/jenkins_home/jenkins-cli.jar -s http://localhost:8080/ -auth $USER_NAME:$USER_PASSWORD install-plugin $i
     done
     docker rm -f jenkins
-    sudo ex +g/useSecurity/d +g/authorizationStrategy/d -scwq /var/lib/jenkins/config.xml
+    ex +g/useSecurity/d +g/authorizationStrategy/d -scwq /var/lib/jenkins/config.xml
     docker run -d --name jenkins -e JAVA_OPTS="-Djenkins.install.runSetupWizard=false" -p 8080:8080 -p 50000:50000 -v /var/run/docker.sock:/var/run/docker.sock -v /var/jenkins_home/:/var/jenkins_home jenkins/jenkins:lts
-    INFO "Start Jenkins..."
+    INFO "Jenkins is starting..."
     INFO "Now you can open http://localhost:8000/"
+
 }
 
 function install_slaves_nodes(){
     su - vagrant -c "ansible-playbook /tmp/install.yml"
+    su - vagrant -c "ansible-playbook --connection=local --inventory 127.0.0.1, /tmp/install.yml"
 }
 
 config_jenkins
 jenkins_plugins
 install_slaves_nodes
+INFO "##########################################"
+INFO "#     INSTALLATION HAS FINISHED          #"
+INFO "##########################################"

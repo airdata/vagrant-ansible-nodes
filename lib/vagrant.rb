@@ -5,7 +5,9 @@
 # vagrant test env
 
 require 'yaml'
-
+###############################################################################
+# Plugin settings                                                             #
+###############################################################################
 required_plugins = %w( vagrant-hosts vagrant-cachier )
 required_plugins.each do |plugin|
     exec "vagrant plugin install #{plugin};vagrant #{ARGV.join(" ")}" unless Vagrant.has_plugin? plugin || ARGV[0] == 'plugin'

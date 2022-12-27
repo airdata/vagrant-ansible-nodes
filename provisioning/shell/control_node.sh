@@ -32,8 +32,7 @@ function add_ansible_nodes() {
 function install_all() {
     INFO "Upgrade and Install packages"
     # Install required packages
-    sudo yum upgrade -y
-    sudo yum install -y yum-utils yum-presto wget openssl curl mlocate epel-release device-mapper-persistent-data lvm2 vim net-tools python3 python3-pip python3-devel openssl-devel python3-libselinux gcc
+    sudo yum install -y yum-utils yum-presto wget ansible git openssl curl mlocate device-mapper-persistent-data lvm2 vim net-tools openssl-devel gcc
     # Setup python3 as default
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python2 50
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.6 60
@@ -43,24 +42,13 @@ function install_all() {
     sudo sed -e '1s/.*/#!\/usr\/bin\/python2 -tt/g' -i /bin/yum-config-manager
     echo "export PATH=/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin">> /etc/environment
     source /etc/environment
-    # Install docker git, docker-compose and ansible
-    sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    sudo yum install -y docker-ce ansible git
-    sudo systemctl start docker
-    INFO "Docker is started"
-    sudo systemctl enable docker
-    sudo groupadd docker
-    sudo usermod -aG docker vagrant
-    curl -L "https://github.com/docker/compose/releases/download/1.25.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    chmod +x /usr/local/bin/docker-compose
-    ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
     # Install molecule and ansible-cmdb
     sudo python3 -m pip install --upgrade pip setuptools wheel setuptools_rust
     sudo python3 -m pip install "molecule[docker]" ansible-cmdb
     # Download and Install Jenkins and Java
     sudo mkdir -m 777 /var/jenkins_home
     docker run -d --name jenkins -p 8080:8080 -p 50000:50000 -v /var/run/docker.sock:/var/run/docker.sock -v /var/jenkins_home/:/var/jenkins_home jenkins/jenkins:lts
-    sleep 60
+    sleep 20
     INFO "Jenkins password: $(docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword)"
 }
 

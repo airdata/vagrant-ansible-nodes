@@ -31,6 +31,9 @@ Vagrant.configure("2") do |config|
     pr.cpus = opts['provider']['virtualbox']['vm']['cpu']
   end
 
+  ###############################################################################
+  # VM definitions                                                              #
+  ###############################################################################
   nodes_array.each do |node|
     config.vm.define node['name'] do |cfg|
       cfg.vm.box = opts['provider']['virtualbox']['vm']['box']
@@ -45,6 +48,11 @@ Vagrant.configure("2") do |config|
         end
       if node['name'] == 'control-node'
         cfg.vm.network :forwarded_port, host: 8000, guest: 8080
+        cfg.vm.provision "ansible" do |ansible|
+          ansible.playbook = "#{ansible_provisioning_dir}/install.yml"
+          ansible.limit = "all"
+          ansible.become = true
+        end
         cfg.vm.provision opts['provisioner'][1]['type'].to_sym do |s|
           s.path = "#{shell_provisioning_dir}/control_node.sh"
           s.args = worker_nodes

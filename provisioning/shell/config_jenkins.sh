@@ -48,6 +48,7 @@ function jenkins_plugins() {
     sudo ex +g/useSecurity/d +g/authorizationStrategy/d -scwq /var/lib/jenkins/config.xml
     docker run -d --name jenkins -e JAVA_OPTS="-Djenkins.install.runSetupWizard=false" -p 8080:8080 -p 50000:50000 -v /var/run/docker.sock:/var/run/docker.sock -v /var/jenkins_home/:/var/jenkins_home jenkins/jenkins:lts
     INFO "Start Jenkins..."
+    INFO "Now you can open http://localhost:8000/"
 }
 
 config_jenkins

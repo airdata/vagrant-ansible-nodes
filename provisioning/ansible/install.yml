@@ -6,7 +6,7 @@
   become: yes
 
   tasks:
-    - name: Install python 3.6
+    - name: Install python 3.6 and epel-release
       yum:
         name:
           - python3
@@ -25,7 +25,7 @@
         key: "https://download.docker.com/linux/{{ mydistribution }}/gpg"
         state: present
 
-    - name: Add repository into repo.d list
+    - name: Add docker repository
       ansible.builtin.yum_repository:
         name: docker
         description: docker repository
@@ -55,7 +55,7 @@
         enabled: true
         state: started
 
-    - name: adding vagrant user to docker group
+    - name: Adding vagrant user to docker group
       ansible.builtin.user:
         name: vagrant
         groups: vagrant,docker

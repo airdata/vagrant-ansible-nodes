@@ -35,7 +35,7 @@ function config_jenkins() {
     # Create admin user
     echo 'jenkins.model.Jenkins.instance.securityRealm.createAccount("'$USER_NAME'","'$USER_PASSWORD'")' |java -jar /var/jenkins_home/jenkins-cli.jar -auth admin:$initial_password -s http://localhost:8080/ groovy =
 }
-function plugins_install() {
+function jenkins_plugins() {
     docker exec jenkins sed -i 's/<denyAnonymousReadAccess>true<\/denyAnonymousReadAccess>/<denyAnonymousReadAccess>false<\/denyAnonymousReadAccess>/g' /var/jenkins_home/config.xml
     docker exec jenkins sed -i 's/<useSecurity>true<\/useSecurity>/<useSecurity>false<\/useSecurity>/g' /var/jenkins_home/config.xml
 
@@ -48,4 +48,4 @@ function plugins_install() {
 }
 
 config_jenkins
-plugins_install
+jenkins_plugins

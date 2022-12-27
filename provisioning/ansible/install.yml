@@ -1,13 +1,13 @@
 ---
 - name: Install common
   hosts: all
-  vars:
-    ansible_python_interpreter: /usr/bin/python2
   become: yes
   gather_facts: true
+  vars:
+    ansible_python_interpreter: /usr/bin/python2
 
   tasks:
-    - name: Check if packages
+    - name: Check packages
       package_facts:
         manager: auto
 
@@ -18,9 +18,11 @@
           - python3-pip
           - python3-devel
           - python3-libselinux
+          - python3-setuptools
+          - net-tools
           - epel-release
         state: present
-      when: "'python3' not in ansible_facts.packages"
+      when: "'python3' or 'epel-release' not in ansible_facts.packages"
 
     - name: Set mydistribution
       ansible.builtin.set_fact:
@@ -64,14 +66,18 @@
         name: "docker"
         enabled: true
         state: started
-      when: "'docker-ce' in ansible_facts.packages"
+
+    - name: Enable service Docker
+      ansible.builtin.systemd:
+        name: docker
+        enabled: yes
+        masked: no
 
     - name: Adding vagrant user to docker group
       ansible.builtin.user:
         name: vagrant
         groups: vagrant,docker
         append: yes
-      when: "'docker-ce' in ansible_facts.packages"
 
     - name: Upgrade all packages
       ansible.builtin.yum:

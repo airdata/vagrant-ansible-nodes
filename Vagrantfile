@@ -1,9 +1,10 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# provisioners map
-# 0 - hosts
-# 1 - shell
+# Requires and install the following plugins:
+#
+#  - vagrant-hosts
+#  - vagrant-cachier
 
 require_relative 'lib/vagrant'
 
@@ -21,16 +22,16 @@ nodes_array = opts['provider']['virtualbox']['nodes']
 worker_nodes = extract_worker_nodes(nodes_array)
 
 Vagrant.configure("2") do |config|
-  ###############################################################################
-  # Plugin settings                                                             #
-  ###############################################################################
+  ##############################################################
+  #            Plugin settings                                 #
+  ##############################################################
   config.cache.auto_detect = opts['cache']['auto_detect']
   config.ssh.insert_key = false
   config.vm.box_download_insecure=true
 
-  ###############################################################################
-  # VirtualBox settings                                                         #
-  ###############################################################################
+  #################################################################
+  #              VirtualBox settings                              #
+  #################################################################
   config.vm.provider :virtualbox do |pr|
     nodes_array.each do |node|
       pr.memory = node['mem']
@@ -38,9 +39,9 @@ Vagrant.configure("2") do |config|
     end
   end
 
-  ###############################################################################
-  # VM definitions                                                              #
-  ###############################################################################
+  ##############################################################
+  #          VM definitions                                     #
+  ###############################################################
   nodes_array.each do |node|
     config.vm.define node['name'] do |cfg|
       cfg.vm.box = opts['provider']['virtualbox']['vm']['box']

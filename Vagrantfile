@@ -27,8 +27,10 @@ Vagrant.configure("2") do |config|
   config.vm.box_download_insecure=true
 
   config.vm.provider :virtualbox do |pr|
-    pr.memory = opts['provider']['virtualbox']['vm']['mem']
+    nodes_array.each do |node|
+    pr.memory = node['mem']
     pr.cpus = opts['provider']['virtualbox']['vm']['cpu']
+    end
   end
 
   ###############################################################################

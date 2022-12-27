@@ -8,7 +8,6 @@
     virtualbox:
       vm:
         cpu: 1
-        mem: 521
         net: 'private_network'
         box: 'centos/7'
       nodes:
@@ -16,14 +15,17 @@
           name: 'node-0'
           hostname: 'node-0'
           ip: '10.0.0.11'
+          mem: 512
         -
           name: 'node-1'
           hostname: 'node-1'
           ip: '10.0.0.12'
+          mem: 512
         -
           name: 'control-node'
           hostname: 'control-node'
           ip: '10.0.0.10'
+          mem: 1024
   provisioner:
     -
       type: 'hosts'

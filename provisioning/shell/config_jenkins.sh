@@ -44,7 +44,9 @@ function jenkins_plugins() {
     for i in ${PLUGIN_NAME[@]};do
        java -jar /var/jenkins_home/jenkins-cli.jar -s http://localhost:8080/ -auth $USER_NAME:$USER_PASSWORD install-plugin $i
     done
-    docker restart jenkins
+    docker rm -f jenkins
+    docker run -d --name jenkins -e JAVA_OPTS="-Djenkins.install.runSetupWizard=false" -p 8080:8080 -p 50000:50000 -v /var/run/docker.sock:/var/run/docker.sock -v /var/jenkins_home/:/var/jenkins_home jenkins/jenkins:lts
+    INFO "Start Jenkins..."
 }
 
 config_jenkins

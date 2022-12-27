@@ -58,8 +58,3 @@
         name: vagrant
         groups: vagrant,docker
         append: yes
-
-    - name: Upgrade all packages, excluding kernel & python
-      ansible.builtin.yum:
-        name: '*'
-        state: latest

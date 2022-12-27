@@ -32,7 +32,7 @@ function add_ansible_nodes() {
 function install_all() {
     INFO "Upgrade and Install packages"
     # Install required packages
-    sudo yum install -y yum-utils yum-presto wget ansible git openssl curl mlocate device-mapper-persistent-data lvm2 vim net-tools openssl-devel gcc
+    sudo yum install -y yum-utils yum-presto wget ansible git java-11-openjdk-devel openssl curl mlocate device-mapper-persistent-data lvm2 vim net-tools openssl-devel gcc
     # Setup python3 as default
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python2 50
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.6 60

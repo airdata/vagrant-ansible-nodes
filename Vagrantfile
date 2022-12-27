@@ -57,6 +57,10 @@ Vagrant.configure("2") do |config|
           s.path = "#{shell_provisioning_dir}/control_node.sh"
           s.args = worker_nodes
         end
+        cfg.vm.provision opts['provisioner'][1]['type'].to_sym do |s|
+          s.path = "#{shell_provisioning_dir}/config_jenkins.sh"
+          s.args = worker_nodes
+        end
         cfg.vm.provision opts['provisioner'][2]['type'].to_sym, source: ssh_keys_dir, destination: destination_dir
       else
         cfg.vm.provision opts['provisioner'][1]['type'].to_sym do |s|

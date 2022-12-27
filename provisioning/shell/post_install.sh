@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
+
 INFO(){
     /bin/echo -e "\e[104m\e[97m[INFO -->]\e[49m\e[39m $@"
 }
 USER_NAME=admin
 USER_PASSWORD=admin
-PLUGIN_NAME=( "ace-editor" "ansible-tower" "ansicolor" "ant" "antisamy-markup-formatter" "apache-httpcomponents-client-4-api" "atlassian-bitbucket-server-integration" "authentication-tokens"
+PLUGIN_NAME=("ace-editor" "ansible-tower" "ansicolor" "ant" "antisamy-markup-formatter" "apache-httpcomponents-client-4-api" "atlassian-bitbucket-server-integration" "authentication-tokens"
             "blueocean-autofavorite" "blueocean-bitbucket-pipeline" "blueocean-commons" "blueocean-config" "blueocean-core-js" "blueocean-dashboard" "blueocean-display-url" "blueocean-events" "blueocean-git-pipeline"
             "blueocean-github-pipeline" "blueocean-i18n" "blueocean-jwt" "blueocean-personalization" "blueocean-pipeline-api-impl" "blueocean-pipeline-editor" "blueocean-pipeline-scm-api" "blueocean-rest-impl" "blueocean-rest"
             "blueocean-web" "blueocean" "bootstrap5-api" "bouncycastle-api" "branch-api" "build-monitor-plugin" "build-timeout" "build-user-vars-plugin" "build-with-parameters" "caffeine-api" "checks-api" "cloud-stats" "cloudbees-bitbucket-branch-source"
@@ -16,7 +17,8 @@ PLUGIN_NAME=( "ace-editor" "ansible-tower" "ansicolor" "ant" "antisamy-markup-fo
             "pipeline-build-step" "pipeline-github-lib" "pipeline-graph-analysis" "pipeline-graph-view" "pipeline-groovy-lib" "pipeline-input-step" "pipeline-milestone-step" "pipeline-model-api" "pipeline-model-definition" "pipeline-model-extensions" "pipeline-rest-api"
             "pipeline-stage-step" "pipeline-stage-tags-metadata" "pipeline-stage-view" "plain-credentials" "plugin-util-api" "popper2-api" "pubsub-light" "resource-disposer" "role-strategy" "scm-api" "script-security" "show-build-parameters" "snakeyaml-api" "sse-gateway" "ssh-agent"
             "ssh-credentials" "ssh-slaves" "ssh-steps" "sshd" "structs" "subversion" "timestamper" "token-macro" "trilead-api" "uno-choice" "validating-string-parameter" "variant" "windows-slaves" "workflow-aggregator" "workflow-api" "workflow-basic-steps" "workflow-cps"
-            "workflow-durable-task-step" "workflow-job" "workflow-multibranch" "workflow-scm-step" "workflow-step-api" "workflow-support" "ws-cleanup" "yet-another-docker-plugin" )
+            "workflow-durable-task-step" "workflow-job" "workflow-multibranch" "workflow-scm-step" "workflow-step-api" "workflow-support" "ws-cleanup" "yet-another-docker-plugin")
+
 function config_jenkins() {
     # Get initial password
     INFO "Getting jenkins-cli"
@@ -35,6 +37,7 @@ function config_jenkins() {
     # Create admin user
     echo 'jenkins.model.Jenkins.instance.securityRealm.createAccount("'$USER_NAME'","'$USER_PASSWORD'")' |java -jar /var/jenkins_home/jenkins-cli.jar -auth admin:$initial_password -s http://localhost:8080/ groovy =
 }
+
 function jenkins_plugins() {
     sed -i 's/<denyAnonymousReadAccess>true<\/denyAnonymousReadAccess>/<denyAnonymousReadAccess>false<\/denyAnonymousReadAccess>/g' /var/jenkins_home/config.xml
     sed -i 's/<useSecurity>true<\/useSecurity>/<useSecurity>false<\/useSecurity>/g' /var/jenkins_home/config.xml
@@ -51,5 +54,10 @@ function jenkins_plugins() {
     INFO "Now you can open http://localhost:8000/"
 }
 
+function install_slaves_nodes(){
+    su - vagrant -c "ansible-playbook /tmp/install.yml"
+}
+
 config_jenkins
 jenkins_plugins
+install_slaves_nodes

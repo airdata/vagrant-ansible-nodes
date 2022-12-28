@@ -3,8 +3,8 @@
 
 # Requires and install the following plugins:
 #
-#  - vagrant-hosts
-#  - vagrant-cachier
+#- vagrant-hosts
+#- vagrant-cachier
 
 require_relative 'lib/vagrant'
 
@@ -21,17 +21,16 @@ pub_key = File.read(File.join(ssh_keys_dir, 'id_rsa.pub'))
 nodes_array = opts['provider']['virtualbox']['nodes']
 worker_nodes = extract_worker_nodes(nodes_array)
 
+#Print the config
+puts "Config: #{opts.inspect}"
+
 Vagrant.configure("2") do |config|
-  ##############################################################
-  #            Plugin settings                                 #
-  ##############################################################
+  # Plugin settings #
   config.cache.auto_detect = opts['cache']['auto_detect']
   config.ssh.insert_key = false
   config.vm.box_download_insecure=true
 
-  #################################################################
-  #              VirtualBox settings                              #
-  #################################################################
+  #VirtualBox settings#
   config.vm.provider :virtualbox do |pr|
     nodes_array.each do |node|
       pr.memory = node['mem']
@@ -39,24 +38,17 @@ Vagrant.configure("2") do |config|
     end
   end
 
-  ##############################################################
-  #          VM definitions                                     #
-  ###############################################################
+  #VM definitions #
   nodes_array.each do |node|
     config.vm.define node['name'] do |cfg|
       cfg.vm.box = opts['provider']['virtualbox']['vm']['box']
       cfg.vm.hostname = node['hostname']
-      # Configure A Private Network IP
+      # Configure A Private Network IP and Ports
       cfg.vm.network opts['provider']['virtualbox']['vm']['net'].to_sym, ip: node['ip']
       cfg.vm.provision opts['provisioner'][0]['type'].to_sym, sync_hosts: opts['provisioner'][0]['sync_hosts']
-      if node['name'] == 'node-0'
-        cfg.vm.network :forwarded_port, host: 8001, guest: 8080
-        end
-      if node['name'] == 'node-1'
-        cfg.vm.network :forwarded_port, host: 8002, guest: 8080
-        end
+      cfg.vm.network :forwarded_port, host: node['host_port'], guest: node['guest_port']
+      # Install ansible and docker on the control host
       if node['name'] == 'control-node'
-        cfg.vm.network :forwarded_port, host: 8000, guest: 8080
         cfg.vm.provision "file", source: "#{ansible_provisioning_dir}/install.yml", destination: "/tmp/install.yml"
         cfg.vm.provision opts['provisioner'][1]['type'].to_sym do |s|
           s.path = "#{shell_provisioning_dir}/control_node.sh"

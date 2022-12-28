@@ -46,7 +46,9 @@ Vagrant.configure("2") do |config|
       # Configure A Private Network IP and Ports
       cfg.vm.network opts['provider']['virtualbox']['vm']['net'].to_sym, ip: node['ip']
       cfg.vm.provision opts['provisioner'][0]['type'].to_sym, sync_hosts: opts['provisioner'][0]['sync_hosts']
-      cfg.vm.network :forwarded_port, host: node['host_port'], guest: node['guest_port']
+      if node.fetch('external_access').fetch('enabled')
+        cfg.vm.network :forwarded_port, host: node['host_port'], guest: node['guest_port']
+      end
       # Install ansible and docker on the control host
       if node['name'] == 'control-node'
         cfg.vm.provision "file", source: "#{ansible_provisioning_dir}/install.yml", destination: "/tmp/install.yml"

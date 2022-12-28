@@ -1,43 +1,47 @@
 ---
-  plugins:
-    - 'vagrant-hosts'
-    - 'vagrant-cachier'
-  cache:
-    auto_detect: true
-  provider:
-    virtualbox:
-      vm:
-        cpu: 1
-        net: 'private_network'
-        box: 'centos/7'
-      nodes:
-        -
-          name: 'node-0'
-          hostname: 'node-0'
-          ip: '10.0.0.11'
-          mem: 512
-          guest_port: 800
-          host_port: 8080
-        -
-          name: 'node-1'
-          hostname: 'node-1'
-          ip: '10.0.0.12'
-          mem: 512
-          guest_port: 8002
-          host_port: 8080
-        -
-          name: 'control-node'
-          hostname: 'control-node'
-          ip: '10.0.0.10'
-          mem: 1024
-          guest_port: 8000
-          host_port: 8080
-  provisioner:
-    -
-      type: 'hosts'
-      sync_hosts: true
-    -
-      type: 'shell'
-    -
-      type: 'file'
+plugins:
+  - 'vagrant-hosts'
+  - 'vagrant-cachier'
+cache:
+  auto_detect: true
+provider:
+  virtualbox:
+    vm:
+      cpu: 1
+      net: 'private_network'
+      box: 'centos/7'
+    nodes:
+      # VM config
+      - name: 'worker-node-1'
+        hostname: 'worker-node-1'
+        ip: '10.0.0.11'
+        mem: 512
+        guest_port: 8080
+        host_port: 8001
+        external_access:
+          enabled: true
+
+      - name: 'worker-node-2'
+        hostname: 'worker-node-2'
+        ip: '10.0.0.12'
+        mem: 512
+        guest_port: 8080
+        host_port: 8002
+        external_access:
+          enabled: false
+
+      - name: 'control-node'
+        hostname: 'control-node'
+        ip: '10.0.0.10'
+        mem: 1024
+        guest_port: 8080
+        host_port: 8000
+        external_access:
+          enabled: true
+
+provisioner:
+  - type: 'hosts'
+    sync_hosts: true
+  - type: 'shell'
+  - type: 'file'
 

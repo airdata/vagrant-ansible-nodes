@@ -5,7 +5,6 @@ require 'yaml'
 ##############################################################
 #             Plugin settings                                #
 ##############################################################
-
 required_plugins = [
   {:name => "vagrant-hosts", :version => "2.9.0"},
 #  {:name => "vagrant-vbguest", :version => "0.21"},

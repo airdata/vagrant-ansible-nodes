@@ -2,6 +2,7 @@
 plugins:
   - 'vagrant-hosts'
   - 'vagrant-cachier'
+#  - 'vagrant-vbguest'
 cache:
   auto_detect: true
 provider:

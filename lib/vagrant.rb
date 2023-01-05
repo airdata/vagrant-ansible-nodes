@@ -5,9 +5,23 @@ require 'yaml'
 ##############################################################
 #             Plugin settings                                #
 ##############################################################
-required_plugins = %w( vagrant-hosts vagrant-cachier )
-required_plugins.each do |plugin|
-  exec "vagrant plugin install #{plugin};vagrant #{ARGV.join(" ")}" unless Vagrant.has_plugin? plugin || ARGV[0] == 'plugin'
+
+required_plugins = [
+  {:name => "vagrant-hosts", :version => "2.9.0"},
+#  {:name => "vagrant-vbguest", :version => "0.21"},
+  {:name => "vagrant-cachier", :version => "1.2.1"}
+]
+
+plugins_to_install = required_plugins.select { |plugin| not Vagrant.has_plugin?(plugin[:name], plugin[:version]) }
+if not plugins_to_install.empty?
+  plugins_to_install.each { |plugin_to_install|
+    puts "Installing plugin: #{plugin_to_install[:name]}, version #{plugin_to_install[:version]}"
+    if system "vagrant plugin install #{plugin_to_install[:name]} --plugin-version \"#{plugin_to_install[:version]}\""
+    else
+      abort "Installation of one or more plugins has failed. Aborting."
+    end
+  }
+  exec "vagrant #{ARGV.join(' ')}"
 end
 
 def check_plugins(required_plugins)

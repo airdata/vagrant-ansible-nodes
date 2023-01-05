@@ -19,9 +19,6 @@ pub_key = File.read(File.join(ssh_keys_dir, 'id_rsa.pub'))
 nodes_array = opts['provider']['virtualbox']['nodes']
 worker_nodes = extract_worker_nodes(nodes_array)
 
-#Print the VM's configuration
-puts "Config: #{opts.inspect}"
-
 Vagrant.configure("2") do |config|
   # Plugin settings #
   config.cache.auto_detect = opts['cache']['auto_detect']

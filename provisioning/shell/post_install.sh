@@ -18,13 +18,12 @@ PLUGIN_NAME=("ace-editor" "ansible-tower" "ansicolor" "ant" "antisamy-markup-for
             "pipeline-build-step" "pipeline-github-lib" "pipeline-graph-analysis" "pipeline-graph-view" "pipeline-groovy-lib" "pipeline-input-step" "pipeline-milestone-step" "pipeline-model-api" "pipeline-model-definition" "pipeline-model-extensions" "pipeline-rest-api"
             "pipeline-stage-step" "pipeline-stage-tags-metadata" "pipeline-stage-view" "plain-credentials" "plugin-util-api" "popper2-api" "pubsub-light" "resource-disposer" "role-strategy" "scm-api" "script-security" "show-build-parameters" "snakeyaml-api" "sse-gateway" "ssh-agent"
             "ssh-credentials" "ssh-slaves" "ssh-steps" "sshd" "structs" "subversion" "timestamper" "token-macro" "trilead-api" "uno-choice" "validating-string-parameter" "variant" "workflow-aggregator" "workflow-api" "workflow-basic-steps" "workflow-cps"
-            "workflow-durable-task-step" "workflow-job" "workflow-multibranch" "workflow-scm-step" "workflow-step-api" "workflow-support" "ws-cleanup" "yet-another-docker-plugin")
+            "workflow-durable-task-step" "workflow-job" "workflow-multibranch" "workflow-scm-step" "workflow-step-api" "workflow-support" "ws-cleanup" "yet-another-docker-plugin" "ansible" )
 
 function config_jenkins() {
     # Get initial password
-    INFO "Wait for jenkins to get UP..."
     until curl --retry 10 --retry-delay 5 -s -o /dev/null "http://localhost:8080/jnlpJars/jenkins-cli.jar"; do
-        sleep 5
+        INFO "Wait for jenkins to get UP..."; sleep 5
     done
 
     # Get jenkins CLI
@@ -44,12 +43,10 @@ function jenkins_plugins() {
     sed -i 's/<denyAnonymousReadAccess>true<\/denyAnonymousReadAccess>/<denyAnonymousReadAccess>false<\/denyAnonymousReadAccess>/g' /var/jenkins_home/config.xml
     sed -i 's/<useSecurity>true<\/useSecurity>/<useSecurity>false<\/useSecurity>/g' /var/jenkins_home/config.xml
 
-    if [ ! -d "/var/jenkins_home/plugins/git/" ]; then
-        INFO "Installing Jenkins plugins"
-        for i in ${PLUGIN_NAME[@]}; do
-           java -jar /var/jenkins_home/jenkins-cli.jar -s http://localhost:8080/ -auth $USER_NAME:$USER_PASSWORD install-plugin $i
-        done
-    fi
+    INFO "Installing Jenkins plugins"
+    for i in ${PLUGIN_NAME[@]}; do
+       java -jar /var/jenkins_home/jenkins-cli.jar -s http://localhost:8080/ -auth $USER_NAME:$USER_PASSWORD install-plugin $i
+    done
 
     docker rm -f jenkins
     ex +g/useSecurity/d +g/authorizationStrategy/d -scwq /var/jenkins_home/config.xml

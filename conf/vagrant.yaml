@@ -29,7 +29,7 @@ provider:
         guest_port: 8080
         host_port: 8002
         external_access:
-          enabled: false
+          enabled: true
 
       - name: 'control-node'
         hostname: 'control-node'

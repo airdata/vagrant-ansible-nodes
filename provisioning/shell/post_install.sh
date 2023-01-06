@@ -3,6 +3,7 @@
 INFO(){
     /bin/echo -e "\e[48;5;76m[INFO -->]\e[49m\e[39m $@"
 }
+
 USER_NAME=admin
 USER_PASSWORD=admin
 PLUGIN_NAME=("ace-editor" "ansible-tower" "ansicolor" "ant" "antisamy-markup-formatter" "apache-httpcomponents-client-4-api" "authentication-tokens"
@@ -21,20 +22,20 @@ PLUGIN_NAME=("ace-editor" "ansible-tower" "ansicolor" "ant" "antisamy-markup-for
 
 function config_jenkins() {
     # Get initial password
-    INFO "Getting jenkins-cli"
-    initial_password=$(docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword)
-
-    # Get jenkins CLI
-    path_to_jenkins='/var/jenkins_home/jenkins-cli.jar'
+    INFO "Wait for jenkins to get UP..."
     until curl --retry 10 --retry-delay 5 -s -o /dev/null "http://localhost:8080/jnlpJars/jenkins-cli.jar"; do
         sleep 5
     done
+
+    # Get jenkins CLI
+    path_to_jenkins='/var/jenkins_home/jenkins-cli.jar'
     if [ ! -f $path_to_jenkins ]; then
        wget http://localhost:8080/jnlpJars/jenkins-cli.jar -O $path_to_jenkins
     fi
-    # Jenkins version
-    docker exec jenkins echo 2.0 > /var/jenkins_home/jenkins.install.InstallUtil.lastExecVersion
+
     # Create admin user
+    docker exec jenkins echo 2.0 > /var/jenkins_home/jenkins.install.InstallUtil.lastExecVersion
+    initial_password=$(docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword)
     echo 'jenkins.model.Jenkins.instance.securityRealm.createAccount("'$USER_NAME'","'$USER_PASSWORD'")' |java -jar /var/jenkins_home/jenkins-cli.jar -auth admin:$initial_password -s http://localhost:8080/ groovy =
 }
 
@@ -43,27 +44,36 @@ function jenkins_plugins() {
     sed -i 's/<denyAnonymousReadAccess>true<\/denyAnonymousReadAccess>/<denyAnonymousReadAccess>false<\/denyAnonymousReadAccess>/g' /var/jenkins_home/config.xml
     sed -i 's/<useSecurity>true<\/useSecurity>/<useSecurity>false<\/useSecurity>/g' /var/jenkins_home/config.xml
 
-    INFO "Installing Jenkins plugins"
-    for i in ${PLUGIN_NAME[@]}; do
-       java -jar /var/jenkins_home/jenkins-cli.jar -s http://localhost:8080/ -auth $USER_NAME:$USER_PASSWORD install-plugin $i
-    done
+    if [ ! -d "/var/jenkins_home/plugins/git/" ]; then
+        INFO "Installing Jenkins plugins"
+        for i in ${PLUGIN_NAME[@]}; do
+           java -jar /var/jenkins_home/jenkins-cli.jar -s http://localhost:8080/ -auth $USER_NAME:$USER_PASSWORD install-plugin $i
+        done
+    fi
 
     docker rm -f jenkins
-    ex +g/useSecurity/d +g/authorizationStrategy/d -scwq /var/lib/jenkins/config.xml
-    docker run -d --name jenkins -e JAVA_OPTS="-Djenkins.install.runSetupWizard=false" -p 8080:8080 -p 50000:50000 -v /var/run/docker.sock:/var/run/docker.sock -v /var/jenkins_home/:/var/jenkins_home jenkins/jenkins:lts
+    ex +g/useSecurity/d +g/authorizationStrategy/d -scwq /var/jenkins_home/config.xml
+    docker run --restart always -d --name jenkins -e JAVA_OPTS="-Djenkins.install.runSetupWizard=false" -p 8080:8080 -p 50000:50000 -v /var/run/docker.sock:/var/run/docker.sock -v /var/jenkins_home/:/var/jenkins_home jenkins/jenkins:lts
     INFO "Jenkins is starting..."
-    INFO "Now you can open http://localhost:8000/"
-
 }
 
-function install_slaves_nodes(){
+function install_all_nodes(){
     su - vagrant -c "ansible-playbook /tmp/install.yml"
     su - vagrant -c "ansible-playbook --connection=local --inventory 127.0.0.1, /tmp/install.yml"
 }
 
-config_jenkins
-jenkins_plugins
-install_slaves_nodes
-INFO "##########################################"
-INFO "#     INSTALLATION HAS FINISHED          #"
-INFO "##########################################"
+if [ ! -d "/var/jenkins_home/plugins/git/" ]; then
+    config_jenkins
+    jenkins_plugins
+    install_all_nodes
+else
+    install_all_nodes
+fi
+
+INFO "###############################################"
+INFO "#                                             #"
+INFO "#     INSTALLATION HAS FINISHED !             #"
+INFO "#                                             #"
+INFO "#   Now you can open http://localhost:8000/   #"
+INFO "#                                             #"
+INFO "###############################################"

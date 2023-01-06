@@ -1,9 +1,6 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Requires and install the following plugins:
-# - vagrant-hosts
-# - vagrant-cachier
 require_relative 'lib/vagrant'
 
 work_dir = File.dirname(File.expand_path(__FILE__))
@@ -24,7 +21,7 @@ Vagrant.configure("2") do |config|
   config.cache.auto_detect = opts['cache']['auto_detect']
   config.cache.enable :yum
   config.ssh.insert_key = false
-  config.vm.box_download_insecure=true
+  config.vm.box_download_insecure = true
 
   #VirtualBox settings#
   config.vm.provider :virtualbox do |pr|
@@ -39,6 +36,9 @@ Vagrant.configure("2") do |config|
     config.vm.define node['name'] do |cfg|
       cfg.vm.box = opts['provider']['virtualbox']['vm']['box']
       cfg.vm.hostname = node['hostname']
+      cfg.vbguest.installer_hooks[:before_install] = ["yum install -y epel-release libX11 libXt libXext.x86_64 libXrender.x86_64 libXtst.x86_64 libXmu", "sleep 1"]
+      cfg.vbguest.installer_options = { allow_kernel_upgrade: true }
+      cfg.vbguest.auto_update = true
 
       # Configure A Private Network IP and Ports
       cfg.vm.network opts['provider']['virtualbox']['vm']['net'].to_sym, ip: node['ip']

@@ -11,7 +11,7 @@
       package_facts:
         manager: auto
 
-    - name: Install python 3.6 and epel-release
+    - name: Install python 3.6
       ansible.builtin.yum:
         name:
           - python3
@@ -20,9 +20,8 @@
           - python3-libselinux
           - python3-setuptools
           - net-tools
-          - epel-release
         state: present
-      when: "'python3' or 'epel-release' not in ansible_facts.packages"
+      when: "'python3' not in ansible_facts.packages"
 
     - name: Set mydistribution
       ansible.builtin.set_fact:
@@ -47,9 +46,9 @@
     - name: Install Docker
       ansible.builtin.yum:
         name:
-          - docker-ce
-          - docker-ce-cli
-          - containerd.io
+          - docker-ce-20.10.22-3.el7.x86_64
+          - docker-ce-cli-20.10.22-3.el7.x86_64
+          - containerd.io-1.6.14-3.1.el7
         state: latest
         update_cache: true
       when: "'docker-ce' not in ansible_facts.packages"
@@ -58,8 +57,7 @@
       get_url:
         url : https://github.com/docker/compose/releases/download/1.29.2/docker-compose-linux-x86_64
         dest: /usr/local/bin/docker-compose
-        mode: 'u+x,g+x'
-      when: "'docker-ce' not in ansible_facts.packages"
+        mode: 'a+x'
 
     - name: Start Docker
       ansible.builtin.service:
@@ -78,8 +76,3 @@
         name: vagrant
         groups: vagrant,docker
         append: yes
-
-    - name: Upgrade all packages
-      ansible.builtin.yum:
-        name: '*'
-        state: latest

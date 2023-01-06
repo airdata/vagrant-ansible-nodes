@@ -38,7 +38,7 @@ Vagrant.configure("2") do |config|
       cfg.vm.hostname = node['hostname']
       cfg.vbguest.installer_hooks[:before_install] = ["yum install -y epel-release libX11 libXt libXext.x86_64 libXrender.x86_64 libXtst.x86_64 libXmu", "sleep 1"]
       cfg.vbguest.installer_options = { allow_kernel_upgrade: true }
-      cfg.vbguest.auto_update = true
+      cfg.vbguest.auto_update = node['guest_auto_update']
 
       # Configure A Private Network IP and Ports
       cfg.vm.network opts['provider']['virtualbox']['vm']['net'].to_sym, ip: node['ip']

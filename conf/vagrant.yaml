@@ -21,6 +21,7 @@ provider:
         host_port: 8001
         external_access:
           enabled: true
+        guest_auto_update: false
 
       - name: 'worker-node-2'
         hostname: 'worker-node-2'
@@ -30,6 +31,7 @@ provider:
         host_port: 8002
         external_access:
           enabled: true
+        guest_auto_update: false
 
       - name: 'control-node'
         hostname: 'control-node'
@@ -39,6 +41,7 @@ provider:
         host_port: 8000
         external_access:
           enabled: true
+        guest_auto_update: true
 
 provisioner:
   - type: 'hosts'
